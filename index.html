@@ -13,221 +13,98 @@
     }
     body {
       margin: 0;
-      padding: 2rem;
+      padding: 4rem;
       font-family: 'Segoe UI', sans-serif;
       color: #fff;
       background: linear-gradient(135deg, #091521, #123d40, #142c46);
       overflow-x: hidden;
       background-attachment: fixed;
     }
-    .star {
-      position: fixed;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.8;
-      animation: floatStars linear infinite;
-      z-index: -1;
-    }
     h1 {
-      font-size: 3em;
+      font-size: 4em;
       text-align: center;
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
       text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.6);
     }
     #searchBox {
       display: block;
-      margin: 0 auto 2rem auto;
-      padding: 0.8rem 1rem;
-      font-size: 1rem;
-      border-radius: 10px;
+      margin: 0 auto 3rem auto;
+      padding: 1rem 1.5rem;
+      font-size: 1.2rem;
+      border-radius: 12px;
       border: none;
-      max-width: 300px;
+      max-width: 400px;
       width: 100%;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       grid-template-rows: repeat(3, 1fr);
-      gap: 2rem;
-      max-width: 800px;
+      gap: 3rem;
+      max-width: 1000px;
       margin: 0 auto;
     }
     .category-tile {
       background: linear-gradient(to bottom right, #2d4034, #3d6552);
-      border-radius: 2rem;
-      padding: 2rem;
+      border-radius: 2.5rem;
+      padding: 3rem;
       cursor: pointer;
       transition: transform 0.2s ease, background 0.3s ease;
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-      font-size: 1.4em;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      font-size: 1.8em;
+      text-align: center;
+      user-select: none;
     }
     .category-tile:hover {
       background: #4b8469;
       transform: scale(1.06);
     }
-    .popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0);
-      background: rgba(15, 25, 30, 0.95);
-      border-radius: 2rem;
-      padding: 3rem;
-      box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
-      z-index: 100;
-      transition: transform 0.4s ease;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 90vw;
-    }
-    .popup.show {
-      transform: translate(-50%, -50%) scale(1);
-    }
-    .popup-header {
-      font-size: 1.2em;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    .bubble-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
-    }
-    .bubble {
-      background: #4da47a;
-      padding: 1rem 2rem;
-      border-radius: 100px;
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-      transition: transform 0.2s;
-      font-size: 1.1em;
-    }
-    .bubble:hover {
-      transform: scale(1.1);
-    }
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      z-index: 99;
-      display: none;
-    }
-    .overlay.show {
+    #fclToggleButton {
+      margin: 4rem auto 2rem auto;
       display: block;
+      padding: 1.2rem 2.5rem;
+      font-size: 1.1rem;
+      border-radius: 12px;
+      background: #2f4f3f;
+      color: white;
+      border: 2px solid white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <script>
-    const companies = {
-      bess: ['Tesla Energy', 'Fluence', 'Smartville', 'RePurpose Energy', 'Relectrify', 'B2U Storage', 'LG Energy Solution', 'Blue Planet Energy'],
-      bms: ['Nuvation Energy', 'Eberspächer', 'Valence', 'Relectrify', 'TWAICE'],
-      data: ['FlexGen', 'AutoGrid', 'AMS', 'Stem Inc.', 'TWAICE', 'Invinity Energy Systems'],
-      integrators: ['Burns & McDonnell', 'Black & Veatch', 'ICF', 'Schneider Electric', 'Tesla Energy', 'Powin Energy'],
-      ems: ['Doosan GridTech', 'Greensmith (Wärtsilä)', 'AutoGrid', 'Stem Inc.', 'Enbala', 'Energy Toolbase'],
-      pcs: ['Dynapower', 'SMA', 'Sungrow', 'ABB (Fimer)', 'Yaskawa Solectria', 'Relectrify']
-    };
-
-    const starCount = 100;
-    for (let i = 0; i < starCount; i++) {
-      const star = document.createElement('div');
-      const size = Math.random() * 2 + 1;
-      star.classList.add('star');
-      star.style.width = `${size}px`;
-      star.style.height = `${size}px`;
-      star.style.left = `${Math.random() * 100}%`;
-      star.style.top = `${Math.random() * 100 + 100}vh`;
-      star.style.animationDuration = `${60 + Math.random() * 60}s`;
-      document.body.appendChild(star);
-    }
-
-    const allCompanies = Array.from(new Set(Object.values(companies).flat()));
-    const fuse = new Fuse(allCompanies, { threshold: 0.4 });
-
-    function openPopupForCompany(companyName) {
-      const result = fuse.search(companyName);
-      if (!result.length) return alert("Company not found.");
-      const bestMatch = result[0].item;
-      const categories = Object.entries(companies).filter(([_, names]) => names.includes(bestMatch));
-      const popup = document.getElementById('popup');
-      const overlay = document.getElementById('overlay');
-      const header = `<div class='popup-header'><strong>${bestMatch}</strong><br>Appears in: ${categories.map(([cat]) => cat.toUpperCase()).join(', ')}</div>`;
-      popup.innerHTML = header + '<div class="bubble-container">' + categories.map(([_, list]) => `<div class='bubble'>${bestMatch}</div>`).join('') + '</div>';
-      popup.classList.add('show');
-      overlay.classList.add('show');
-    }
-
-    function openPopup(category) {
-      const popup = document.getElementById('popup');
-      const overlay = document.getElementById('overlay');
-      popup.innerHTML = '<div class="bubble-container">' + companies[category].map(name => `<div class='bubble' onclick="openPopupForCompany('${name}')">${name}</div>`).join('') + '</div>';
-      popup.classList.add('show');
-      overlay.classList.add('show');
-    }
-
-    function closePopup() {
-      document.getElementById('popup').classList.remove('show');
-      document.getElementById('overlay').classList.remove('show');
-    }
-
-    function toggleFCL() {
-      const indexBox = document.getElementById('companyIndex');
-      const toggleBtn = document.getElementById('fclToggleButton');
-      if (indexBox.style.display === 'none' || indexBox.style.display === '') {
-        renderCompanyIndex();
-        indexBox.style.display = 'block';
-        toggleBtn.innerText = 'Close Full Company List';
-      } else {
-        indexBox.style.display = 'none';
-        toggleBtn.innerText = 'Open Full Company List';
-      }
-    }
-
-    function renderCompanyIndex() {
-      const list = document.getElementById('companyList');
-      list.innerHTML = '';
-      const map = {};
-      for (const [category, names] of Object.entries(companies)) {
-        for (const name of names) {
-          if (!map[name]) map[name] = [];
-          map[name].push(category.toUpperCase());
-        }
-      }
-      const sortedNames = Object.keys(map).sort();
-      for (const name of sortedNames) {
-        const li = document.createElement('li');
-        li.style.marginBottom = '0.5rem';
-        li.innerHTML = `<span style='cursor:pointer; color:#aaf;' onclick="openPopupForCompany('${name}')">${name}</span> — [${map[name].join(', ')}]`;
-        list.appendChild(li);
-      }
-    }
-  </script>
-
   <h1>Competitor Landscape Ecosystem</h1>
-  <input id="searchBox" type="text" placeholder="Search a company..." onkeydown="if(event.key==='Enter'){ openPopupForCompany(this.value.trim()) }">
-
+  <input type="text" id="searchBox" placeholder="Search a company...">
   <div class="grid">
-    <div class="category-tile" onclick="openPopup('bess')">BESS Providers</div>
-    <div class="category-tile" onclick="openPopup('bms')">BMS Providers</div>
-    <div class="category-tile" onclick="openPopup('data')">Data Analytics</div>
-    <div class="category-tile" onclick="openPopup('integrators')">Integrators</div>
-    <div class="category-tile" onclick="openPopup('ems')">Energy Management</div>
-    <div class="category-tile" onclick="openPopup('pcs')">PCS / Inverters</div>
+    <div class="category-tile" id="bess">BESS Providers</div>
+    <div class="category-tile" id="bms">BMS Providers</div>
+    <div class="category-tile" id="analytics">Data Analytics</div>
+    <div class="category-tile" id="integrators">Integrators</div>
+    <div class="category-tile" id="ems">Energy Management</div>
+    <div class="category-tile" id="pcs">PCS / Inverters</div>
   </div>
+  <button id="fclToggleButton">Open Full Company List</button>
 
-  <button id="fclToggleButton" onclick="toggleFCL()" style="margin: 3rem auto 1rem auto; display: block; padding: 1rem 2rem; font-size: 1rem; border-radius: 12px; background: #2f4f3f; color: white; border: none; cursor: pointer;">Open Full Company List</button>
+  <script>
+    document.getElementById("bess").addEventListener("click", () => alert("BESS Providers clicked"));
+    document.getElementById("bms").addEventListener("click", () => alert("BMS Providers clicked"));
+    document.getElementById("analytics").addEventListener("click", () => alert("Data Analytics clicked"));
+    document.getElementById("integrators").addEventListener("click", () => alert("Integrators clicked"));
+    document.getElementById("ems").addEventListener("click", () => alert("Energy Management clicked"));
+    document.getElementById("pcs").addEventListener("click", () => alert("PCS / Inverters clicked"));
 
-  <div id="companyIndex" style="display: none; max-height: 300px; overflow-y: auto; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 12px; max-width: 800px; margin: 0 auto; font-size: 0.95rem;">
-    <ul id="companyList" style="list-style: none; padding: 0;"></ul>
-  </div>
+    const fclButton = document.getElementById("fclToggleButton");
+    fclButton.addEventListener("click", () => {
+      alert("Full Company List clicked");
+    });
 
-  <div class="overlay" id="overlay" onclick="closePopup()"></div>
-  <div class="popup" id="popup"></div>
+    const searchBox = document.getElementById("searchBox");
+    searchBox.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        alert(`Searching for: ${searchBox.value}`);
+      }
+    });
+  </script>
 </body>
 </html>
+
